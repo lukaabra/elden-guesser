@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Area {
+  id      Int      @id @default(autoincrement())
+  label   String
+  updated DateTime @updatedAt
+
+  location          Location[]
+  Submission        Submission[]
+  SubmissionHistory SubmissionHistory[]
+  Guess             Guess[]
+}
+
+model Location {
+  id            Int      @id @default(autoincrement())
+  label         String
+  areaId        Int
+  coordinatesId Int
+  updated       DateTime @updatedAt
+
+  area        Area        @relation(fields: [areaId], references: [id])
+  coordinates Coordinates @relation(fields: [coordinatesId], references: [id])
+}
+
+model Coordinates {
+  id      Int      @id @default(autoincrement())
+  x       Int
+  y       Int
+  updated DateTime @updatedAt
+
+  location          Location[]
+  Submission        Submission[]
+  SubmissionHistory SubmissionHistory[]
+  Guess             Guess[]
+}
+
+model Bearing {
+  id                Int                 @id @default(autoincrement())
+  degree            Int
+  Submission        Submission[]
+  SubmissionHistory SubmissionHistory[]
+  Guess             Guess[]
+}
+
+model Submission {
+  id            Int      @id @default(autoincrement())
+  accountId     Int
+  imageId       Int
+  areaId        Int
+  coordinatesId Int
+  bearingId     Int
+  created       DateTime @default(now())
+
+  account          Account         @relation(fields: [accountId], references: [id])
+  image            Image           @relation(fields: [imageId], references: [id])
+  area             Area            @relation(fields: [areaId], references: [id])
+  coordinates      Coordinates     @relation(fields: [coordinatesId], references: [id])
+  bearing          Bearing         @relation(fields: [bearingId], references: [id])
+  Guess            Guess[]
+  AccountHistory   AccountHistory? @relation(fields: [accountHistoryId], references: [id])
+  accountHistoryId Int?
+}
+
+model SubmissionHistory {
+  id            Int      @id @default(autoincrement())
+  accountId     Int
+  imageId       Int
+  areaId        Int
+  coordinatesId Int
+  bearingId     Int
+  created       DateTime @default(now())
+
+  account          Account         @relation(fields: [accountId], references: [id])
+  image            Image           @relation(fields: [imageId], references: [id])
+  area             Area            @relation(fields: [areaId], references: [id])
+  coordinates      Coordinates     @relation(fields: [coordinatesId], references: [id])
+  bearing          Bearing         @relation(fields: [bearingId], references: [id])
+  AccountHistory   AccountHistory? @relation(fields: [accountHistoryId], references: [id])
+  accountHistoryId Int?
+}
+
+model Guess {
+  id            Int      @id @default(autoincrement())
+  accountId     Int
+  submissionId  Int // On which submission the user guessed
+  areaId        Int // To tell the user if he/she guessed the area
+  coordinatesId Int // Coordinates of the guess
+  bearingId     Int
+  updated       DateTime @updatedAt
+
+  account          Account         @relation(fields: [accountId], references: [id])
+  submission       Submission      @relation(fields: [submissionId], references: [id])
+  area             Area            @relation(fields: [areaId], references: [id])
+  coordinates      Coordinates     @relation(fields: [coordinatesId], references: [id])
+  bearing          Bearing         @relation(fields: [bearingId], references: [id])
+  AccountHistory   AccountHistory? @relation(fields: [accountHistoryId], references: [id])
+  accountHistoryId Int?
+}
+
+model Image {
+  id                Int                 @id @default(autoincrement())
+  label             String
+  size              String
+  url               String
+  Submission        Submission[]
+  SubmissionHistory SubmissionHistory[]
+}
+
+model Account {
+  id                Int                 @id @default(autoincrement())
+  firstName         String
+  lastName          String
+  email             String
+  passwordHash      String
+  created           DateTime            @default(now())
+  Submission        Submission[]
+  SubmissionHistory SubmissionHistory[]
+  Guess             Guess[]
+}
+
+model AccountHistory {
+  id                Int                 @id @default(autoincrement())
+  firstName         String
+  lastName          String
+  email             String
+  passwordHash      String
+  created           DateTime            @default(now())
+  Submission        Submission[]
+  SubmissionHistory SubmissionHistory[]
+  Guess             Guess[]
+}
