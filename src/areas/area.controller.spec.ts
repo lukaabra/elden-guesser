@@ -28,7 +28,9 @@ describe('AreaController', () => {
 
       expect(await areaController.getOne('1')).toStrictEqual(result);
     });
+  });
 
+  describe('findAll', () => {
     it('should return all (2) Area objects', async () => {
       const result = [
         {
