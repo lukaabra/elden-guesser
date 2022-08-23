@@ -25,16 +25,4 @@ export class AreaService {
     const { skip, take, cursor, where, orderBy } = params;
     return this.prisma.area.findMany({ skip, take, cursor, where, orderBy });
   }
-
-  async create(data: Prisma.AreaCreateInput): Promise<Area> {
-    return this.prisma.area.create({ data });
-  }
-
-  async update(params: {
-    where: Prisma.AreaWhereUniqueInput;
-    data: Prisma.AreaUpdateInput;
-  }): Promise<Area> {
-    const { where, data } = params;
-    return this.prisma.area.update({ data, where });
-  }
 }

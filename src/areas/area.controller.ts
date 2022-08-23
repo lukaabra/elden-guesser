@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Post,
-  Body,
-  Put,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { Area } from '@prisma/client';
 
 import { AreaService } from './area.service';
@@ -24,10 +16,5 @@ export class AreaController {
   @Get('/:id')
   async getOne(@Param('id') id: string): Promise<Area> {
     return this.areaService.findOne({ id: Number(id) });
-  }
-
-  @Post()
-  async create(@Body() areaData: { label: string }): Promise<Area> {
-    return this.areaService.create(areaData);
   }
 }
