@@ -4,7 +4,7 @@ import { Area } from '@prisma/client';
 import { AreaService } from './area.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-@Controller('/area')
+@Controller('area')
 export class AreaController {
   constructor(private areaService: AreaService) {}
 
@@ -16,7 +16,7 @@ export class AreaController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('/:id')
+  @Get(':id')
   async getOne(@Param('id') id: string): Promise<Area> {
     return this.areaService.findOneById({ id: Number(id) });
   }

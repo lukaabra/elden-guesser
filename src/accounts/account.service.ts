@@ -7,6 +7,10 @@ import { PrismaService } from '../prisma.service';
 export class AccountService {
   constructor(private prisma: PrismaService) {}
 
+  async create(data: Prisma.AccountCreateInput): Promise<Account> {
+    return this.prisma.account.create({ data });
+  }
+
   async findOneWhere(
     accountWhereInput: Prisma.AccountWhereInput,
   ): Promise<Account | null> {
