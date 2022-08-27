@@ -10,10 +10,10 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateAccount(email: string, pass: string): Promise<any> {
+  async validateAccount(email: string, password: string): Promise<any> {
     const account = await this.accountService.findOne({ email });
 
-    if (account?.passwordHash === pass) {
+    if (account?.passwordHash === password) {
       delete account.passwordHash;
       return account;
     }
@@ -22,8 +22,7 @@ export class AuthService {
   }
 
   async login(user: any) {
-    console.log(user, 'user');
-    const payload = { username: user.username, sub: user.userId };
+    const payload = { email: user.email, id: user.id };
 
     return { access_token: this.jwtService.sign(payload) };
   }

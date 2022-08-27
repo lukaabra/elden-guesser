@@ -1,15 +1,17 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
 import { Area } from '@prisma/client';
 
 import { AreaService } from './area.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('/area')
 export class AreaController {
   constructor(private areaService: AreaService) {}
 
   // TODO: Add query strings
+  @UseGuards(JwtAuthGuard)
   @Get()
-  async getAll(): Promise<Area[]> {
+  async getAll(@Request() req): Promise<Area[]> {
     return this.areaService.findAll({});
   }
 
