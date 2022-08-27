@@ -13,6 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   // validate receives the decoded JWT
+  // TODO: Add type of payload
   async validate(payload: any) {
     // TODO: Lookup account ID in revoked account ID list
     return { id: payload.sub, email: payload.username };

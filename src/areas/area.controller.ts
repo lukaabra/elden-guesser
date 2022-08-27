@@ -15,8 +15,9 @@ export class AreaController {
     return this.areaService.findAll({});
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('/:id')
   async getOne(@Param('id') id: string): Promise<Area> {
-    return this.areaService.findOne({ id: Number(id) });
+    return this.areaService.findOneById({ id: Number(id) });
   }
 }

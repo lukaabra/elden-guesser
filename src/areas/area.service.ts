@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Area, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma.service';
@@ -7,12 +7,20 @@ import { PrismaService } from '../prisma.service';
 export class AreaService {
   constructor(private prisma: PrismaService) {}
 
-  async findOne(
+  async findOneById(
     areaWhereUniqueInput: Prisma.AreaWhereUniqueInput,
   ): Promise<Area | null> {
-    return this.prisma.area.findUnique({
+    const area = await this.prisma.area.findUnique({
       where: areaWhereUniqueInput,
     });
+
+    if (!area) {
+      throw new NotFoundException(
+        `Area with ID: ${areaWhereUniqueInput?.id} does not exist.`,
+      );
+    }
+
+    return area;
   }
 
   async findAll(params: {

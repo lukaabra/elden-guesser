@@ -11,7 +11,7 @@ export class AuthService {
   ) {}
 
   async validateAccount(email: string, password: string): Promise<any> {
-    const account = await this.accountService.findOne({ email });
+    const account = await this.accountService.findOneWhere({ email });
 
     if (account?.passwordHash === password) {
       delete account.passwordHash;
