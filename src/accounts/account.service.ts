@@ -37,4 +37,10 @@ export class AccountService {
     const { skip, take, cursor, where, orderBy } = params;
     return this.prisma.account.findMany({ skip, take, cursor, where, orderBy });
   }
+
+  async exists(accountWhereInput: Prisma.AccountWhereInput): Promise<boolean> {
+    return Boolean(
+      await this.prisma.account.findFirst({ where: accountWhereInput }),
+    );
+  }
 }

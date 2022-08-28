@@ -117,7 +117,7 @@ model Account {
   id                Int                 @id @default(autoincrement())
   firstName         String
   lastName          String
-  email             String
+  email             String              @unique
   passwordHash      String
   created           DateTime            @default(now())
   Submission        Submission[]
