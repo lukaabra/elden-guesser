@@ -1,9 +1,10 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Account } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 import { AccountService } from '../accounts/account.service';
+import { SignUp } from './dto/signup.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,19 +13,14 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(signUpPayload: any): Promise<Account | null> {
-    if (this.accountService.exists({ email: signUpPayload.email })) {
-      throw new ConflictException(
-        `Account with email ${signUpPayload.email} already exists.`,
-      );
-    }
-
+  async register(signUpPayload: SignUp): Promise<Account | null> {
     const hashedPassword = await bcrypt.hash(signUpPayload.password, 10);
-    signUpPayload.passwordHash = hashedPassword;
-    delete signUpPayload.password;
 
-    const account = await this.accountService.create(signUpPayload);
-    delete account.passwordHash;
+    const account = await this.accountService.create({
+      ...signUpPayload,
+      password: hashedPassword,
+    });
+    delete account.password;
 
     return account;
   }
@@ -39,11 +35,11 @@ export class AuthService {
     const account = await this.accountService.findOneWhere({ email });
     const passwordHashIsSame = await bcrypt.compare(
       password,
-      account?.passwordHash,
+      account?.password,
     );
 
     if (passwordHashIsSame) {
-      delete account.passwordHash;
+      delete account.password;
       return account;
     }
 

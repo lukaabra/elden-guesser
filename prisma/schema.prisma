@@ -118,7 +118,7 @@ model Account {
   firstName         String
   lastName          String
   email             String              @unique
-  passwordHash      String
+  password          String
   created           DateTime            @default(now())
   Submission        Submission[]
   SubmissionHistory SubmissionHistory[]
@@ -130,7 +130,7 @@ model AccountHistory {
   firstName         String
   lastName          String
   email             String
-  passwordHash      String
+  password          String
   created           DateTime            @default(now())
   Submission        Submission[]
   SubmissionHistory SubmissionHistory[]

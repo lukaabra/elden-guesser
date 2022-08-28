@@ -2,7 +2,7 @@ import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
 import { Area } from '@prisma/client';
 
 import { AreaService } from './area.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('area')
 export class AreaController {
