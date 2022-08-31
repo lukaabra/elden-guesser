@@ -12,7 +12,19 @@ describe('AuthController', () => {
     controller = module.get<AuthController>(AuthController);
   });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+  // it('should register account', () => {
+  //   expect(controller).toBeDefined();
+  // });
+
+  // it('should fail to register new account', () => {
+  //   expect(controller).toBeDefined();
+  // });
+
+  // it('should login account', () => {
+  //   expect(controller).toBeDefined();
+  // });
+
+  // it('should fail to login account', () => {
+  //   expect(controller).toBeDefined();
+  // });
 });

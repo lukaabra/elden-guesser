@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Account } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 import { AccountService } from '../accounts/account.service';
+import { Login } from './dto/login.dto';
 import { SignUp } from './dto/signup.dto';
 
 @Injectable()
 export class AuthService {
+  loginErrorMessage = 'Email or password is incorrect.';
+
   constructor(
     private accountService: AccountService,
     private jwtService: JwtService,
@@ -25,25 +28,39 @@ export class AuthService {
     return account;
   }
 
-  async login(user: any) {
-    const payload = { email: user.email, id: user.id };
+  async login(loginPayload: Login) {
+    await this.validateAccount(loginPayload);
 
-    return { access_token: this.jwtService.sign(payload) };
+    return { access_token: this.jwtService.sign(loginPayload) };
   }
 
-  async validateAccount(email: string, password: string): Promise<any> {
-    const account = await this.accountService.findOneWhere({ email });
-    const passwordHashIsSame = await bcrypt.compare(
-      password,
-      account?.password,
-    );
+  async validateAccount(loginPayload: Login): Promise<any> {
+    const { email, password } = loginPayload;
 
-    if (passwordHashIsSame) {
-      delete account.password;
-      return account;
+    const account = await this.validateAccountEmail(email);
+    this.validateAccountPassword(password, account?.password);
+
+    delete account.password;
+    return account;
+  }
+
+  async validateAccountEmail(email: string): Promise<Account> {
+    const account = await this.accountService.findOneWhere({ email });
+    if (!account) {
+      throw new UnauthorizedException(this.loginErrorMessage);
     }
 
-    return null;
+    return account;
+  }
+
+  async validateAccountPassword(
+    password: string,
+    accountPassword: string,
+  ): Promise<void> {
+    const passwordHashIsSame = await bcrypt.compare(password, accountPassword);
+    if (!passwordHashIsSame) {
+      throw new UnauthorizedException(this.loginErrorMessage);
+    }
   }
 
   async verifyPayload(payload: any): Promise<Account> {

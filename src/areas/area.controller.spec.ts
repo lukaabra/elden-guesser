@@ -18,34 +18,34 @@ describe('AreaController', () => {
     areaService = moduleRef.get<AreaService>(AreaService);
   });
 
-  describe('findOne', () => {
-    it('should return a single Area object', async () => {
-      const result = {
-        id: 1,
-        label: 'Test Area',
-        updated: new Date('2022-08-23T20:52:03.781Z'),
-      };
+  // describe('findOne', () => {
+  //   it('should return a single Area object', async () => {
+  //     const result = {
+  //       id: 1,
+  //       label: 'Test Area',
+  //       updated: new Date('2022-08-23T20:52:03.781Z'),
+  //     };
 
-      expect(await areaController.getOne('1')).toStrictEqual(result);
-    });
-  });
+  //     expect(await areaController.getOne('1')).toStrictEqual(result);
+  //   });
+  // });
 
-  describe('findAll', () => {
-    it('should return all (2) Area objects', async () => {
-      const result = [
-        {
-          id: 1,
-          label: 'Test Area',
-          updated: new Date('2022-08-23T20:52:03.781Z'),
-        },
-        {
-          id: 2,
-          label: 'Test Area 2',
-          updated: new Date('2022-08-23T20:52:03.781Z'),
-        },
-      ];
+  // describe('findAll', () => {
+  //   it('should return all (2) Area objects', async () => {
+  //     const result = [
+  //       {
+  //         id: 1,
+  //         label: 'Test Area',
+  //         updated: new Date('2022-08-23T20:52:03.781Z'),
+  //       },
+  //       {
+  //         id: 2,
+  //         label: 'Test Area 2',
+  //         updated: new Date('2022-08-23T20:52:03.781Z'),
+  //       },
+  //     ];
 
-      expect(await areaController.getAll()).toStrictEqual(result);
-    });
-  });
+  //     expect(await areaController.getAll()).toStrictEqual(result);
+  //   });
+  // });
 });
