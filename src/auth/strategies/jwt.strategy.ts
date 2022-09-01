@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 
 import { AuthService } from '../auth.service';
+import { Jwt } from '../dto/jwt.dto';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -15,8 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   // validate receives the decoded JWT
-  // TODO: Add type of payload
-  async validate(payload: any) {
+  async validate(payload: Jwt) {
     return this.authService.verifyPayload(payload);
   }
 }

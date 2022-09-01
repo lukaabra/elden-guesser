@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { AccountService } from '../accounts/account.service';
 import { Login } from './dto/login.dto';
 import { SignUp } from './dto/signup.dto';
+import { Jwt } from './dto/jwt.dto';
 
 @Injectable()
 export class AuthService {
@@ -63,11 +64,15 @@ export class AuthService {
     }
   }
 
-  async verifyPayload(payload: any): Promise<Account> {
+  async verifyPayload(payload: Jwt): Promise<Account> {
     // TODO: Lookup account ID in revoked account ID list
     const account = await this.accountService.findOneWhere({
       email: payload.email,
     });
+
+    if (account) {
+      delete account.password;
+    }
 
     return account;
   }

@@ -3,11 +3,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { createMock } from 'ts-auto-mock';
 import { Account } from '@prisma/client';
 import { UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 import { AccountService } from '../accounts/account.service';
 import { AuthService } from './auth.service';
 import { SignUp } from './dto/signup.dto';
 import { Login } from './dto/login.dto';
+import { Jwt } from './dto/jwt.dto';
 
 // TODO: Add toHaveBeenCalled to tests
 describe('AuthService', () => {
@@ -24,6 +26,12 @@ describe('AuthService', () => {
   const loginPayload: Login = {
     email: 'test@email.com',
     password: 'password123',
+  };
+  const jwtPayload: Jwt = {
+    email: 'test@email.com',
+    password: 'password123',
+    iat: 1662008930,
+    exp: 1662044930,
   };
 
   beforeEach(async () => {
@@ -51,6 +59,7 @@ describe('AuthService', () => {
     );
   });
 
+  // TODO bcrypt.hash.toHaveBeenCalled
   it('should register account', async () => {
     mockedAccountService.create = jest
       .fn()
@@ -80,7 +89,7 @@ describe('AuthService', () => {
     expect(typeof jwtToken.access_token).toBe('string');
   });
 
-  it('should throw on unsuccessful login', async () => {
+  it('should throw on failed login', async () => {
     service.validateAccount = jest
       .fn()
       .mockRejectedValueOnce(
@@ -124,23 +133,43 @@ describe('AuthService', () => {
     );
   });
 
-  // TODO: Mock bcrypt
-  // it('should validate account password', () => {
-  //   expect(service).toBeDefined();
-  // });
+  // TODO: Propely return true from mock bcrypt.compare
+  it('should validate account password', () => {
+    const correctPassword = loginPayload.password;
+    const spiedBcryptCompare = jest.spyOn(bcrypt, 'compare');
 
-  // it('should throw on validate account password', () => {
-  //   expect(service).toBeDefined();
-  // });
+    service.validateAccountPassword(correctPassword, loginPayload.password);
+    expect(spiedBcryptCompare).toHaveBeenCalled();
+  });
 
-  // it('should verify JWT payload', () => {
-  //   expect(service).toBeDefined();
-  // });
+  it('should throw on validate account password', () => {
+    const incorrectPassword = 'incorrect123';
+    const spiedBcryptCompare = jest.spyOn(bcrypt, 'compare');
 
-  // it('should throw on verify JWT payload', () => {
-  //   expect(service).toBeDefined();
-  // });
+    expect(
+      service.validateAccountPassword(incorrectPassword, loginPayload.password),
+    ).rejects.toThrowError(UnauthorizedException);
+    expect(spiedBcryptCompare).toHaveBeenCalled();
+  });
 
+  it('should verify JWT payload', async () => {
+    mockedAccountService.findOneWhere = jest
+      .fn()
+      .mockResolvedValueOnce(createMock<Account>(registerPayload));
+    const account = await service.verifyPayload(jwtPayload);
+
+    expect(account).toHaveProperty('email', jwtPayload.email);
+    expect(account).not.toHaveProperty('password');
+  });
+
+  it('should not verify JWT payload', async () => {
+    mockedAccountService.findOneWhere = jest.fn().mockResolvedValueOnce(null);
+    const account = await service.verifyPayload(jwtPayload);
+
+    expect(account).toBe(null);
+  });
+
+  // TODO: Add separate method for signing
   // it('should sign a new JWT', () => {
   //   expect(service).toBeDefined();
   // });
