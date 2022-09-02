@@ -85,6 +85,7 @@ describe('AuthService', () => {
     service.validateAccount = jest.fn().mockResolvedValueOnce(null);
     const jwtToken = await service.login(loginPayload);
 
+    expect(mockedJwtService.sign).toHaveBeenCalled();
     expect(jwtToken).toHaveProperty('access_token', jwtToken.access_token);
     expect(jwtToken.access_token).toEqual(signedString);
     expect(typeof jwtToken.access_token).toBe('string');
@@ -113,6 +114,8 @@ describe('AuthService', () => {
     service.validateAccountPassword = jest.fn().mockResolvedValueOnce(null);
     const account = await service.validateAccount(loginPayload);
 
+    expect(service.validateAccountEmail).toHaveBeenCalled();
+    expect(service.validateAccountPassword).toHaveBeenCalled();
     expect(account).toHaveProperty('email', registerPayload.email);
     expect(account).toHaveProperty('firstName', registerPayload.firstName);
     expect(account).toHaveProperty('lastName', registerPayload.lastName);
@@ -188,9 +191,4 @@ describe('AuthService', () => {
 
     expect(account).toBe(null);
   });
-
-  // TODO: Add separate method for signing
-  // it('should sign a new JWT', () => {
-  //   expect(service).toBeDefined();
-  // });
 });
