@@ -59,13 +59,14 @@ describe('AuthService', () => {
     );
   });
 
-  // TODO bcrypt.hash.toHaveBeenCalled
   it('should register account', async () => {
+    const spiedBcryptHash = jest.spyOn(bcrypt, 'hash');
     mockedAccountService.create = jest
       .fn()
       .mockResolvedValueOnce(createMock<Account>(registerPayload));
     const account = await service.register(registerPayload);
 
+    expect(spiedBcryptHash).toHaveBeenCalled();
     expect(account).toHaveProperty('email', registerPayload.email);
     expect(account).toHaveProperty('firstName', registerPayload.firstName);
     expect(account).toHaveProperty('lastName', registerPayload.lastName);
@@ -96,9 +97,13 @@ describe('AuthService', () => {
         new UnauthorizedException(service.loginErrorMessage),
       );
 
-    expect(service.login(loginPayload)).rejects.toThrowError(
-      UnauthorizedException,
-    );
+    try {
+      await service.login(loginPayload);
+    } catch (error) {
+      expect(error).toEqual(
+        new UnauthorizedException(service.loginErrorMessage),
+      );
+    }
   });
 
   it('should validate account', async () => {
@@ -124,32 +129,47 @@ describe('AuthService', () => {
     expect(account.email).toEqual(registerPayload.email);
   });
 
-  it('should throw on validate account email', () => {
+  it('should throw on validate account email', async () => {
     mockedAccountService.findOneWhere = jest.fn().mockResolvedValueOnce(null);
     const email = 'incorrect-email@email.com';
 
-    expect(service.validateAccountEmail(email)).rejects.toThrowError(
-      UnauthorizedException,
-    );
+    try {
+      await service.validateAccountEmail(email);
+    } catch (error) {
+      expect(error).toEqual(
+        new UnauthorizedException(service.loginErrorMessage),
+      );
+    }
   });
 
-  // TODO: Propely return true from mock bcrypt.compare
-  it('should validate account password', () => {
+  it('should validate account password', async () => {
     const correctPassword = loginPayload.password;
-    const spiedBcryptCompare = jest.spyOn(bcrypt, 'compare');
+    const spiedBcryptCompare = jest
+      .spyOn(bcrypt, 'compare')
+      .mockImplementation(() => true);
 
-    service.validateAccountPassword(correctPassword, loginPayload.password);
+    await service.validateAccountPassword(
+      correctPassword,
+      loginPayload.password,
+    );
     expect(spiedBcryptCompare).toHaveBeenCalled();
   });
 
-  it('should throw on validate account password', () => {
+  it('should throw on validate account password', async () => {
     const incorrectPassword = 'incorrect123';
     const spiedBcryptCompare = jest.spyOn(bcrypt, 'compare');
 
-    expect(
-      service.validateAccountPassword(incorrectPassword, loginPayload.password),
-    ).rejects.toThrowError(UnauthorizedException);
-    expect(spiedBcryptCompare).toHaveBeenCalled();
+    try {
+      await service.validateAccountPassword(
+        incorrectPassword,
+        loginPayload.password,
+      );
+    } catch (error) {
+      expect(spiedBcryptCompare).toHaveBeenCalled();
+      expect(error).toEqual(
+        new UnauthorizedException(service.loginErrorMessage),
+      );
+    }
   });
 
   it('should verify JWT payload', async () => {

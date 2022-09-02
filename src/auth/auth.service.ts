@@ -35,7 +35,7 @@ export class AuthService {
     return { access_token: this.jwtService.sign(loginPayload) };
   }
 
-  async validateAccount(loginPayload: Login): Promise<any> {
+  async validateAccount(loginPayload: Login): Promise<Account> {
     const { email, password } = loginPayload;
 
     const account = await this.validateAccountEmail(email);
