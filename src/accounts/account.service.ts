@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Account, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma.service';
@@ -14,17 +14,9 @@ export class AccountService {
   async findOneWhere(
     accountWhereInput: Prisma.AccountWhereInput,
   ): Promise<Account | null> {
-    const account = await this.prisma.account.findFirst({
+    return await this.prisma.account.findFirstOrThrow({
       where: accountWhereInput,
     });
-
-    if (!account) {
-      throw new NotFoundException(
-        `An account with email ${accountWhereInput?.email} does not exist`,
-      );
-    }
-
-    return account;
   }
 
   async findAll(params: {
