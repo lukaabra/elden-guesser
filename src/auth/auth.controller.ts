@@ -12,7 +12,7 @@ import { Account } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { SignUp } from './dto/signup.dto';
-import { Login } from './dto/login.dto';
+import { LoginRequest } from './dto/loginRequest.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,7 +27,7 @@ export class AuthController {
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginPayload: Login) {
+  async login(@Body() loginPayload: LoginRequest) {
     return this.authService.login(loginPayload);
   }
 }

@@ -1,6 +1,6 @@
 import { IsDefined, IsNotEmpty, IsEmail, MinLength } from 'class-validator';
 
-export class Login {
+export class LoginRequest {
   @IsDefined()
   @IsEmail()
   readonly email: string;

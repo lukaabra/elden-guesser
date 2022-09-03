@@ -8,7 +8,7 @@ import * as bcrypt from 'bcrypt';
 import { AccountService } from '../accounts/account.service';
 import { AuthService } from './auth.service';
 import { SignUp } from './dto/signup.dto';
-import { Login } from './dto/login.dto';
+import { LoginRequest } from './dto/loginRequest.dto';
 import { Jwt } from './dto/jwt.dto';
 
 // TODO: Add toHaveBeenCalled to tests
@@ -23,15 +23,15 @@ describe('AuthService', () => {
     firstName: 'John',
     lastName: 'Doe',
   };
-  const loginPayload: Login = {
+  const loginPayload: LoginRequest = {
     email: 'test@email.com',
     password: 'password123',
   };
   const jwtPayload: Jwt = {
     email: 'test@email.com',
-    password: 'password123',
-    iat: 1662008930,
-    exp: 1662044930,
+    accountId: 1,
+    iat: 1662009133,
+    exp: 1662045133,
   };
 
   beforeEach(async () => {
@@ -59,6 +59,10 @@ describe('AuthService', () => {
     );
   });
 
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
   it('should register account', async () => {
     const spiedBcryptHash = jest.spyOn(bcrypt, 'hash');
     mockedAccountService.create = jest
@@ -80,15 +84,19 @@ describe('AuthService', () => {
   // });
 
   it('should login account', async () => {
-    const signedString = 'signedTestValue';
+    const signedString =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZW1haWwuY29tIiwiYWNjb3VudElkIjoxLCJpYXQiOjE2NjIwMDkxMzMsImV4cCI6MTY2MjA0NTEzM30.9HOgZLKX3RT5hqqXS5YU8NWZjH17CkBTuGpUOHF2h_s';
     mockedJwtService.sign = jest.fn().mockReturnValueOnce(signedString);
-    service.validateAccount = jest.fn().mockResolvedValueOnce(null);
+    service.validateAccount = jest
+      .fn()
+      .mockResolvedValueOnce(createMock<Account>(registerPayload));
     const jwtToken = await service.login(loginPayload);
+    const decodedJwt = service.parseJwt(jwtToken.access_token);
 
     expect(mockedJwtService.sign).toHaveBeenCalled();
+    expect(decodedJwt).not.toHaveProperty('password');
     expect(jwtToken).toHaveProperty('access_token', jwtToken.access_token);
     expect(jwtToken.access_token).toEqual(signedString);
-    expect(typeof jwtToken.access_token).toBe('string');
   });
 
   it('should throw on failed login', async () => {
@@ -178,7 +186,9 @@ describe('AuthService', () => {
   it('should verify JWT payload', async () => {
     mockedAccountService.findOneWhere = jest
       .fn()
-      .mockResolvedValueOnce(createMock<Account>(registerPayload));
+      .mockResolvedValueOnce(
+        createMock<Omit<Account, 'password'>>(registerPayload),
+      );
     const account = await service.verifyPayload(jwtPayload);
 
     expect(account).toHaveProperty('email', jwtPayload.email);

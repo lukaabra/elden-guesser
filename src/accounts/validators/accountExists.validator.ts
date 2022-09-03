@@ -12,7 +12,6 @@ export class AccountExists implements ValidatorConstraintInterface {
   constructor(private readonly accountService: AccountService) {}
 
   async validate(email: string): Promise<boolean> {
-    console.log(email, 'e,alaolal');
     return Boolean(await this.accountService.findOneWhere({ email }));
   }
 

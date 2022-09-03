@@ -1,4 +1,4 @@
-import { IsDefined, IsNotEmpty, IsEmail, MinLength } from 'class-validator';
+import { IsDefined, IsEmail } from 'class-validator';
 
 export class Jwt {
   @IsDefined()
@@ -6,9 +6,7 @@ export class Jwt {
   readonly email: string;
 
   @IsDefined()
-  @IsNotEmpty()
-  @MinLength(8)
-  readonly password: string;
+  readonly accountId: number;
 
   @IsDefined()
   readonly iat: number;

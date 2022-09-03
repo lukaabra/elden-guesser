@@ -4,7 +4,8 @@ import { Account } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 import { AccountService } from '../accounts/account.service';
-import { Login } from './dto/login.dto';
+import { LoginRequest } from './dto/loginRequest.dto';
+import { LoginResponse } from './dto/loginResponse.dto';
 import { SignUp } from './dto/signup.dto';
 import { Jwt } from './dto/jwt.dto';
 
@@ -16,6 +17,10 @@ export class AuthService {
     private accountService: AccountService,
     private jwtService: JwtService,
   ) {}
+
+  parseJwt(token: string): Jwt {
+    return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+  }
 
   async register(signUpPayload: SignUp): Promise<Account | null> {
     const hashedPassword = await bcrypt.hash(signUpPayload.password, 10);
@@ -29,13 +34,17 @@ export class AuthService {
     return account;
   }
 
-  async login(loginPayload: Login) {
-    await this.validateAccount(loginPayload);
+  async login(loginPayload: LoginRequest): Promise<LoginResponse> {
+    const account = await this.validateAccount(loginPayload);
+    const jwtToken = this.jwtService.sign({
+      email: account.email,
+      accountId: account.id,
+    });
 
-    return { access_token: this.jwtService.sign(loginPayload) };
+    return { access_token: jwtToken };
   }
 
-  async validateAccount(loginPayload: Login): Promise<Account> {
+  async validateAccount(loginPayload: LoginRequest): Promise<Account> {
     const { email, password } = loginPayload;
 
     const account = await this.validateAccountEmail(email);
@@ -64,7 +73,7 @@ export class AuthService {
     }
   }
 
-  async verifyPayload(payload: Jwt): Promise<Account> {
+  async verifyPayload(payload: Jwt): Promise<Omit<Account, 'password'>> {
     // TODO: Lookup account ID in revoked account ID list
     const account = await this.accountService.findOneWhere({
       email: payload.email,
