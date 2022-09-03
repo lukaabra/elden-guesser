@@ -11,7 +11,6 @@ import { SignUp } from './dto/signup.dto';
 import { LoginRequest } from './dto/loginRequest.dto';
 import { Jwt } from './dto/jwt.dto';
 
-// TODO: Add toHaveBeenCalled to tests
 describe('AuthService', () => {
   let service: AuthService;
   let mockedAccountService: jest.Mocked<AccountService>;
