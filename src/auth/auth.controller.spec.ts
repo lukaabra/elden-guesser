@@ -1,14 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { createMock } from 'ts-auto-mock';
 import { User } from '@prisma/client';
+import { UnauthorizedException } from '@nestjs/common';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { SignUp } from './dto/signup.dto';
 import { LoginRequest } from './dto/loginRequest.dto';
-import { Jwt } from './dto/jwt.dto';
 import { LoginResponse } from './dto/loginResponse.dto';
-import { UnauthorizedException } from '@nestjs/common';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -23,12 +22,6 @@ describe('AuthController', () => {
   const loginPayload: LoginRequest = {
     email: 'test@email.com',
     password: 'password123',
-  };
-  const loginResponse: Jwt = {
-    email: 'test@email.com',
-    userId: 1,
-    iat: 1662009133,
-    exp: 1662045133,
   };
 
   beforeEach(async () => {
