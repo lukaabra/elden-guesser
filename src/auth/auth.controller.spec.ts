@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { createMock } from 'ts-auto-mock';
-import { Account } from '@prisma/client';
+import { User } from '@prisma/client';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -26,7 +26,7 @@ describe('AuthController', () => {
   };
   const loginResponse: Jwt = {
     email: 'test@email.com',
-    accountId: 1,
+    userId: 1,
     iat: 1662009133,
     exp: 1662045133,
   };
@@ -52,20 +52,20 @@ describe('AuthController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should register account', async () => {
+  it('should register user', async () => {
     mockedAuthService.register = jest.fn().mockResolvedValueOnce(
-      createMock<Omit<Account, 'password'>>({
+      createMock<Omit<User, 'password'>>({
         email: registerPayload.email,
         firstName: registerPayload.firstName,
         lastName: registerPayload.lastName,
       }),
     );
-    const account = await controller.register(registerPayload);
+    const user = await controller.register(registerPayload);
 
-    expect(account).toHaveProperty('email', registerPayload.email);
-    expect(account).toHaveProperty('firstName', registerPayload.firstName);
-    expect(account).toHaveProperty('lastName', registerPayload.lastName);
-    expect(account).not.toHaveProperty('password');
+    expect(user).toHaveProperty('email', registerPayload.email);
+    expect(user).toHaveProperty('firstName', registerPayload.firstName);
+    expect(user).toHaveProperty('lastName', registerPayload.lastName);
+    expect(user).not.toHaveProperty('password');
   });
 
   it('should fail to register', async () => {
@@ -84,7 +84,7 @@ describe('AuthController', () => {
     }
   });
 
-  it('should login account', async () => {
+  it('should login user', async () => {
     const loginResponse: LoginResponse = {
       access_token:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZW1haWwuY29tIiwiYWNjb3VudElkIjoxLCJpYXQiOjE2NjIwMDkxMzMsImV4cCI6MTY2MjA0NTEzM30.9HOgZLKX3RT5hqqXS5YU8NWZjH17CkBTuGpUOHF2h_s',

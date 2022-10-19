@@ -1,11 +1,11 @@
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { createMock } from 'ts-auto-mock';
-import { Account } from '@prisma/client';
+import { User } from '@prisma/client';
 import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
-import { AccountService } from '../accounts/account.service';
+import { UserService } from '../users/user.service';
 import { AuthService } from './auth.service';
 import { SignUp } from './dto/signup.dto';
 import { LoginRequest } from './dto/loginRequest.dto';
@@ -13,7 +13,7 @@ import { Jwt } from './dto/jwt.dto';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let mockedAccountService: jest.Mocked<AccountService>;
+  let mockedUserService: jest.Mocked<UserService>;
   let mockedJwtService: jest.Mocked<JwtService>;
 
   const registerPayload: SignUp = {
@@ -28,7 +28,7 @@ describe('AuthService', () => {
   };
   const jwtPayload: Jwt = {
     email: 'test@email.com',
-    accountId: 1,
+    userId: 1,
     iat: 1662009133,
     exp: 1662045133,
   };
@@ -38,8 +38,8 @@ describe('AuthService', () => {
       providers: [AuthService],
     })
       .useMocker((token) => {
-        if (Object.is(token, AccountService)) {
-          return createMock<AccountService>();
+        if (Object.is(token, UserService)) {
+          return createMock<UserService>();
         }
 
         if (Object.is(token, JwtService)) {
@@ -49,10 +49,9 @@ describe('AuthService', () => {
       .compile();
 
     service = module.get<AuthService>(AuthService);
-    mockedAccountService = module.get<
-      AccountService,
-      jest.Mocked<AccountService>
-    >(AccountService);
+    mockedUserService = module.get<UserService, jest.Mocked<UserService>>(
+      UserService,
+    );
     mockedJwtService = module.get<JwtService, jest.Mocked<JwtService>>(
       JwtService,
     );
@@ -62,18 +61,18 @@ describe('AuthService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should register account', async () => {
+  it('should register user', async () => {
     const spiedBcryptHash = jest.spyOn(bcrypt, 'hash');
-    mockedAccountService.create = jest
+    mockedUserService.create = jest
       .fn()
-      .mockResolvedValueOnce(createMock<Account>(registerPayload));
-    const account = await service.register(registerPayload);
+      .mockResolvedValueOnce(createMock<User>(registerPayload));
+    const user = await service.register(registerPayload);
 
     expect(spiedBcryptHash).toHaveBeenCalled();
-    expect(account).toHaveProperty('email', registerPayload.email);
-    expect(account).toHaveProperty('firstName', registerPayload.firstName);
-    expect(account).toHaveProperty('lastName', registerPayload.lastName);
-    expect(account).not.toHaveProperty('password');
+    expect(user).toHaveProperty('email', registerPayload.email);
+    expect(user).toHaveProperty('firstName', registerPayload.firstName);
+    expect(user).toHaveProperty('lastName', registerPayload.lastName);
+    expect(user).not.toHaveProperty('password');
   });
 
   // TODO: Integration testing with Docker
@@ -82,13 +81,13 @@ describe('AuthService', () => {
   //   expect(service).toBeDefined();
   // });
 
-  it('should login account', async () => {
+  it('should login user', async () => {
     const signedString =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZW1haWwuY29tIiwiYWNjb3VudElkIjoxLCJpYXQiOjE2NjIwMDkxMzMsImV4cCI6MTY2MjA0NTEzM30.9HOgZLKX3RT5hqqXS5YU8NWZjH17CkBTuGpUOHF2h_s';
     mockedJwtService.sign = jest.fn().mockReturnValueOnce(signedString);
-    service.validateAccount = jest
+    service.validateUser = jest
       .fn()
-      .mockResolvedValueOnce(createMock<Account>(registerPayload));
+      .mockResolvedValueOnce(createMock<User>(registerPayload));
     const jwtToken = await service.login(loginPayload);
     const decodedJwt = service.parseJwt(jwtToken.access_token);
 
@@ -99,7 +98,7 @@ describe('AuthService', () => {
   });
 
   it('should throw on failed login', async () => {
-    service.validateAccount = jest
+    service.validateUser = jest
       .fn()
       .mockRejectedValueOnce(
         new UnauthorizedException(service.loginErrorMessage),
@@ -114,37 +113,37 @@ describe('AuthService', () => {
     }
   });
 
-  it('should validate account', async () => {
-    service.validateAccountEmail = jest
+  it('should validate user', async () => {
+    service.validateUserEmail = jest
       .fn()
-      .mockResolvedValueOnce(createMock<Account>(registerPayload));
-    service.validateAccountPassword = jest.fn().mockResolvedValueOnce(null);
-    const account = await service.validateAccount(loginPayload);
+      .mockResolvedValueOnce(createMock<User>(registerPayload));
+    service.validateUserPassword = jest.fn().mockResolvedValueOnce(null);
+    const user = await service.validateUser(loginPayload);
 
-    expect(service.validateAccountEmail).toHaveBeenCalled();
-    expect(service.validateAccountPassword).toHaveBeenCalled();
-    expect(account).toHaveProperty('email', registerPayload.email);
-    expect(account).toHaveProperty('firstName', registerPayload.firstName);
-    expect(account).toHaveProperty('lastName', registerPayload.lastName);
-    expect(account).not.toHaveProperty('password');
+    expect(service.validateUserEmail).toHaveBeenCalled();
+    expect(service.validateUserPassword).toHaveBeenCalled();
+    expect(user).toHaveProperty('email', registerPayload.email);
+    expect(user).toHaveProperty('firstName', registerPayload.firstName);
+    expect(user).toHaveProperty('lastName', registerPayload.lastName);
+    expect(user).not.toHaveProperty('password');
   });
 
-  it('should validate account email', async () => {
-    mockedAccountService.findOneWhere = jest
+  it('should validate user email', async () => {
+    mockedUserService.findOneWhere = jest
       .fn()
-      .mockResolvedValueOnce(createMock<Account>(registerPayload));
-    const account = await service.validateAccountEmail(registerPayload.email);
+      .mockResolvedValueOnce(createMock<User>(registerPayload));
+    const user = await service.validateUserEmail(registerPayload.email);
 
-    expect(account).toHaveProperty('password');
-    expect(account.email).toEqual(registerPayload.email);
+    expect(user).toHaveProperty('password');
+    expect(user.email).toEqual(registerPayload.email);
   });
 
-  it('should throw on validate account email', async () => {
-    mockedAccountService.findOneWhere = jest.fn().mockResolvedValueOnce(null);
+  it('should throw on validate user email', async () => {
+    mockedUserService.findOneWhere = jest.fn().mockResolvedValueOnce(null);
     const email = 'incorrect-email@email.com';
 
     try {
-      await service.validateAccountEmail(email);
+      await service.validateUserEmail(email);
     } catch (error) {
       expect(error).toEqual(
         new UnauthorizedException(service.loginErrorMessage),
@@ -152,25 +151,22 @@ describe('AuthService', () => {
     }
   });
 
-  it('should validate account password', async () => {
+  it('should validate user password', async () => {
     const correctPassword = loginPayload.password;
     const spiedBcryptCompare = jest
       .spyOn(bcrypt, 'compare')
       .mockImplementation(() => true);
 
-    await service.validateAccountPassword(
-      correctPassword,
-      loginPayload.password,
-    );
+    await service.validateUserPassword(correctPassword, loginPayload.password);
     expect(spiedBcryptCompare).toHaveBeenCalled();
   });
 
-  it('should throw on validate account password', async () => {
+  it('should throw on validate user password', async () => {
     const incorrectPassword = 'incorrect123';
     const spiedBcryptCompare = jest.spyOn(bcrypt, 'compare');
 
     try {
-      await service.validateAccountPassword(
+      await service.validateUserPassword(
         incorrectPassword,
         loginPayload.password,
       );
@@ -183,21 +179,21 @@ describe('AuthService', () => {
   });
 
   it('should verify JWT payload', async () => {
-    mockedAccountService.findOneWhere = jest
+    mockedUserService.findOneWhere = jest
       .fn()
       .mockResolvedValueOnce(
-        createMock<Omit<Account, 'password'>>(registerPayload),
+        createMock<Omit<User, 'password'>>(registerPayload),
       );
-    const account = await service.verifyPayload(jwtPayload);
+    const user = await service.verifyPayload(jwtPayload);
 
-    expect(account).toHaveProperty('email', jwtPayload.email);
-    expect(account).not.toHaveProperty('password');
+    expect(user).toHaveProperty('email', jwtPayload.email);
+    expect(user).not.toHaveProperty('password');
   });
 
   it('should not verify JWT payload', async () => {
-    mockedAccountService.findOneWhere = jest.fn().mockResolvedValueOnce(null);
-    const account = await service.verifyPayload(jwtPayload);
+    mockedUserService.findOneWhere = jest.fn().mockResolvedValueOnce(null);
+    const user = await service.verifyPayload(jwtPayload);
 
-    expect(account).toBe(null);
+    expect(user).toBe(null);
   });
 });

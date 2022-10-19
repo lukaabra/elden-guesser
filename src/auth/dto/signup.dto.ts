@@ -6,7 +6,7 @@ import {
   Validate,
 } from 'class-validator';
 
-import { AccountExists } from '../../accounts/validators/accountExists.validator';
+import { UserExists } from '../../users/validators/userExists.validator';
 
 export class SignUp {
   @IsDefined()
@@ -19,7 +19,7 @@ export class SignUp {
 
   @IsDefined()
   @IsEmail()
-  @Validate(AccountExists)
+  @Validate(UserExists)
   readonly email: string;
 
   @IsDefined()

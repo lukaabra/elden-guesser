@@ -7,7 +7,7 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import { Account } from '@prisma/client';
+import { User } from '@prisma/client';
 
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
@@ -20,7 +20,7 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body() signUpPayload: SignUp): Promise<Account> {
+  async register(@Body() signUpPayload: SignUp): Promise<User> {
     return this.authService.register(signUpPayload);
   }
 

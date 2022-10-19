@@ -1,9 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Account } from '@prisma/client';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-import { AccountService } from '../accounts/account.service';
+import { UserService } from '../users/user.service';
 import { LoginRequest } from './dto/loginRequest.dto';
 import { LoginResponse } from './dto/loginResponse.dto';
 import { SignUp } from './dto/signup.dto';
@@ -14,7 +14,7 @@ export class AuthService {
   loginErrorMessage = 'Email or password is incorrect.';
 
   constructor(
-    private accountService: AccountService,
+    private userService: UserService,
     private jwtService: JwtService,
   ) {}
 
@@ -22,67 +22,62 @@ export class AuthService {
     return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
   }
 
-  async register(signUpPayload: SignUp): Promise<Account | null> {
+  async register(signUpPayload: SignUp): Promise<User | null> {
     const hashedPassword = await bcrypt.hash(signUpPayload.password, 10);
 
-    const account = await this.accountService.create({
+    const user = await this.userService.create({
       ...signUpPayload,
       password: hashedPassword,
     });
-    delete account.password;
+    delete user.password;
 
-    return account;
+    return user;
   }
 
   async login(loginPayload: LoginRequest): Promise<LoginResponse> {
-    const account = await this.validateAccount(loginPayload);
+    const user = await this.validateUser(loginPayload);
     const jwtToken = this.jwtService.sign({
-      email: account.email,
-      accountId: account.id,
+      email: user.email,
+      userId: user.id,
     });
 
     return { access_token: jwtToken };
   }
 
-  async validateAccount(loginPayload: LoginRequest): Promise<Account> {
+  async validateUser(loginPayload: LoginRequest): Promise<User> {
     const { email, password } = loginPayload;
 
-    const account = await this.validateAccountEmail(email);
-    this.validateAccountPassword(password, account?.password);
+    const user = await this.validateUserEmail(email);
+    this.validateUserPassword(password, user?.password);
 
-    delete account.password;
-    return account;
+    delete user.password;
+    return user;
   }
 
-  async validateAccountEmail(email: string): Promise<Account> {
-    const account = await this.accountService.findOneWhere({ email });
-    if (!account) {
-      throw new UnauthorizedException(this.loginErrorMessage);
-    }
-
-    return account;
+  async validateUserEmail(email: string): Promise<User> {
+    return await this.userService.findOneWhere({ email });
   }
 
-  async validateAccountPassword(
+  async validateUserPassword(
     password: string,
-    accountPassword: string,
+    userPassword: string,
   ): Promise<void> {
-    const passwordHashIsSame = await bcrypt.compare(password, accountPassword);
+    const passwordHashIsSame = await bcrypt.compare(password, userPassword);
     if (!passwordHashIsSame) {
-      throw new UnauthorizedException(this.loginErrorMessage);
+      throw new Error(this.loginErrorMessage);
     }
   }
 
-  async verifyPayload(payload: Jwt): Promise<Omit<Account, 'password'>> {
-    // TODO: Lookup account ID in revoked account ID list
-    const account = await this.accountService.findOneWhere({
+  async verifyPayload(payload: Jwt): Promise<Omit<User, 'password'>> {
+    // TODO: Lookup user ID in revoked user ID list
+    const user = await this.userService.findOneWhere({
       email: payload.email,
     });
 
-    if (account) {
-      delete account.password;
+    if (user) {
+      delete user.password;
     }
 
-    return account;
+    return user;
   }
 }

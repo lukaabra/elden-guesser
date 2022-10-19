@@ -6,7 +6,7 @@ export class Jwt {
   readonly email: string;
 
   @IsDefined()
-  readonly accountId: number;
+  readonly userId: number;
 
   @IsDefined()
   readonly iat: number;
