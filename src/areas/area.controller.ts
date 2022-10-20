@@ -1,22 +1,59 @@
-import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
-import { Area } from '@prisma/client';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  HttpStatus,
+  HttpCode,
+} from '@nestjs/common';
+import { Area, Prisma } from '@prisma/client';
 
 import { AreaService } from './area.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { DEFAULT_LIMIT } from '../constants';
 
-@Controller('area')
-@UseGuards(JwtAuthGuard)
+type AreasAllParams = {
+  skip?: number;
+  take?: number;
+  orderBy?: { label: Prisma.SortOrder };
+  where?: { label: { contains: string } };
+};
+
+@Controller('areas')
 export class AreaController {
   constructor(private areaService: AreaService) {}
 
-  // TODO: Add query strings
   @Get()
-  async getAll(@Request() req): Promise<Area[]> {
-    return this.areaService.findAll({});
+  @HttpCode(HttpStatus.OK)
+  async getAll(
+    @Query('limit') limit?,
+    @Query('page') page?,
+    @Query('order') order?,
+    @Query('like') like?,
+  ): Promise<Area[]> {
+    const params: AreasAllParams = { take: DEFAULT_LIMIT };
+
+    if (limit) {
+      params.take = parseInt(limit);
+    }
+
+    if (page) {
+      params.skip = (limit ? parseInt(limit) : DEFAULT_LIMIT) * parseInt(page);
+    }
+
+    if (order in Prisma.SortOrder) {
+      params.orderBy = { label: order as Prisma.SortOrder };
+    }
+
+    if (like) {
+      params.where = { label: { contains: like } };
+    }
+
+    return this.areaService.findAll({ ...params });
   }
 
   @Get(':id')
+  @HttpCode(HttpStatus.OK)
   async getOne(@Param('id') id: string): Promise<Area> {
-    return this.areaService.findOneById({ id: Number(id) });
+    return this.areaService.findOneWhere({ id: Number(id) });
   }
 }

@@ -7,20 +7,12 @@ import { PrismaService } from '../prisma.service';
 export class AreaService {
   constructor(private prisma: PrismaService) {}
 
-  async findOneById(
-    areaWhereUniqueInput: Prisma.AreaWhereUniqueInput,
+  async findOneWhere(
+    areaWhereInput: Prisma.AreaWhereInput,
   ): Promise<Area | null> {
-    const area = await this.prisma.area.findUnique({
-      where: areaWhereUniqueInput,
+    return await this.prisma.area.findFirstOrThrow({
+      where: areaWhereInput,
     });
-
-    if (!area) {
-      throw new NotFoundException(
-        `Area with ID: ${areaWhereUniqueInput?.id} does not exist.`,
-      );
-    }
-
-    return area;
   }
 
   async findAll(params: {
