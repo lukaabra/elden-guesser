@@ -5,11 +5,13 @@ import {
   Query,
   HttpStatus,
   HttpCode,
+  HttpException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Area, Prisma } from '@prisma/client';
 
 import { AreaService } from './area.service';
-import { DEFAULT_LIMIT } from '../constants';
+import { DEFAULT_LIMIT } from '../../constants';
 
 type AreasAllParams = {
   skip?: number;

@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { SignUp } from './dto/signup.dto';
 import { LoginRequest } from './dto/loginRequest.dto';
+import { LoginResponse } from './dto/loginResponse.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -26,7 +27,7 @@ export class AuthController {
   @Post('login')
   @UseGuards(LocalAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async login(@Body() loginPayload: LoginRequest) {
+  async login(@Body() loginPayload: LoginRequest): Promise<LoginResponse> {
     return this.authService.login(loginPayload);
   }
 }

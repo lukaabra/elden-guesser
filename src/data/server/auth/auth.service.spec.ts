@@ -154,7 +154,7 @@ describe('AuthService', () => {
   it('should validate user password', async () => {
     const correctPassword = loginPayload.password;
     const spiedBcryptCompare = jest
-      .spyOn(bcrypt, 'compare')
+      .spyOn(bcrypt, 'compareSync')
       .mockImplementation(() => true);
 
     await service.validateUserPassword(correctPassword, loginPayload.password);
@@ -163,7 +163,7 @@ describe('AuthService', () => {
 
   it('should throw on validate user password', async () => {
     const incorrectPassword = 'incorrect123';
-    const spiedBcryptCompare = jest.spyOn(bcrypt, 'compare');
+    const spiedBcryptCompare = jest.spyOn(bcrypt, 'compareSync');
 
     try {
       await service.validateUserPassword(

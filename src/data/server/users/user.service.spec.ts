@@ -3,7 +3,7 @@ import { User, Prisma } from '@prisma/client';
 import { createMock, createMockList } from 'ts-auto-mock';
 
 import { UserService } from './user.service';
-import { PrismaService } from '../prisma.service';
+import { PrismaService } from '../../prisma.service';
 import { NotFoundError } from '@prisma/client/runtime';
 
 describe('UserService', () => {

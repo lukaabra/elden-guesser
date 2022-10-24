@@ -58,13 +58,10 @@ export class AuthService {
     return await this.userService.findOneWhere({ email });
   }
 
-  async validateUserPassword(
-    password: string,
-    userPassword: string,
-  ): Promise<void> {
-    const passwordHashIsSame = await bcrypt.compare(password, userPassword);
+  validateUserPassword(password: string, userPassword: string): void {
+    const passwordHashIsSame = bcrypt.compareSync(password, userPassword);
     if (!passwordHashIsSame) {
-      throw new Error(this.loginErrorMessage);
+      throw new UnauthorizedException(this.loginErrorMessage);
     }
   }
 
