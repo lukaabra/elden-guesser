@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 
-import { AreaModule } from './../src/areas/area.module';
-import { PrismaService } from '../src/prisma.service';
+import { AreaModule } from './area.module';
+import { PrismaService } from '../prisma.service';
 
 describe('AreaController (e2e)', () => {
   let app: INestApplication;
