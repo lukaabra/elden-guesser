@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 
-import { AreaModule } from '../src/data/server/areas/area.module';
-import { PrismaService } from '../src/data/prisma.service';
+import { AreaModule } from './area.module';
+import { PrismaService } from '../../prisma.service';
 
 describe('AreaController (e2e)', () => {
   let app: INestApplication;
@@ -45,16 +45,6 @@ describe('AreaController (e2e)', () => {
     await prisma.area.deleteMany({});
 
     prisma.$disconnect();
-  });
-
-  it('/area/2 (GET)', async () => {
-    const areaId = 2;
-    const res = await request(app.getHttpServer())
-      .get(`/areas/${areaId}`)
-      .expect(200);
-
-    expect(res.body).toBeDefined();
-    expect(res.body[0].label).toEqual(areaTestData[1].label);
   });
 
   it('/area/2 (GET)', async () => {
