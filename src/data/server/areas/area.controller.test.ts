@@ -5,7 +5,7 @@ import * as request from 'supertest';
 import { AreaModule } from './area.module';
 import { PrismaService } from '../../prisma.service';
 
-describe('AreaController (e2e)', () => {
+describe('AreaController', () => {
   let app: INestApplication;
   const prisma: PrismaService = new PrismaService();
   const areaTestData = [
@@ -27,7 +27,8 @@ describe('AreaController (e2e)', () => {
   ];
 
   beforeAll(async () => {
-    prisma.$connect();
+    await prisma.cleanDatabase();
+    // await prisma.$connect();
 
     await prisma.area.createMany({ data: areaTestData });
   });
@@ -41,12 +42,6 @@ describe('AreaController (e2e)', () => {
     await app.init();
   });
 
-  afterAll(async () => {
-    await prisma.area.deleteMany({});
-
-    prisma.$disconnect();
-  });
-
   it('/area/2 (GET)', async () => {
     const areaId = 2;
     const res = await request(app.getHttpServer())
@@ -54,7 +49,7 @@ describe('AreaController (e2e)', () => {
       .expect(200);
 
     expect(res.body).toBeDefined();
-    expect(res.body[0].label).toEqual(areaTestData[1].label);
+    expect(res.body.label).toEqual(areaTestData[1].label);
   });
 
   it('/areas (GET)', async () => {
@@ -77,7 +72,7 @@ describe('AreaController (e2e)', () => {
 
   it('/areas (GET) - skip 20', async () => {
     const res = await request(app.getHttpServer())
-      .get('/areas?page=1')
+      .get('/areas?page=2')
       .expect(200);
 
     expect(res.body).toBeDefined();
@@ -87,7 +82,7 @@ describe('AreaController (e2e)', () => {
 
   it('/areas (GET) - limit 2 skip 2', async () => {
     const res = await request(app.getHttpServer())
-      .get('/areas?limit=2&skip=2')
+      .get('/areas?limit=2&page=2')
       .expect(200);
 
     expect(res.body).toBeDefined();

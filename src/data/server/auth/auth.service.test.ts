@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { createMock } from 'ts-auto-mock';
 import { User } from '@prisma/client';
 import { UnauthorizedException } from '@nestjs/common';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import * as bcrypt from 'bcrypt';
 
 import { UserService } from '../users/user.service';
@@ -10,6 +11,7 @@ import { AuthService } from './auth.service';
 import { SignUp } from './dto/signup.dto';
 import { LoginRequest } from './dto/loginRequest.dto';
 import { Jwt } from './dto/jwt.dto';
+import { PrismaService } from 'src/data/prisma.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -75,11 +77,25 @@ describe('AuthService', () => {
     expect(user).not.toHaveProperty('password');
   });
 
-  // TODO: Integration testing with Docker
-  // https://www.prisma.io/docs/guides/testing/integration-testing
-  // it('should throw on register when email is taken', () => {
-  //   expect(service).toBeDefined();
-  // });
+  it('should throw on register when email is taken', async () => {
+    mockedUserService.create = jest
+      .fn()
+      .mockRejectedValueOnce(
+        new PrismaClientKnownRequestError(
+          'unique column constraint',
+          'P2002',
+          '4.20',
+          { target: ['email'] },
+        ),
+      );
+
+    try {
+      await service.register(registerPayload);
+    } catch (error) {
+      expect(error).toBeInstanceOf(PrismaClientKnownRequestError);
+      expect(error.code).toEqual('P2002');
+    }
+  });
 
   it('should login user', async () => {
     const signedString =

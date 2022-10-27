@@ -23,6 +23,7 @@ export class AuthService {
   }
 
   async register(signUpPayload: SignUp): Promise<User | null> {
+    // try {
     const hashedPassword = await bcrypt.hash(signUpPayload.password, 10);
 
     const user = await this.userService.create({
@@ -32,6 +33,10 @@ export class AuthService {
     delete user.password;
 
     return user;
+    // } catch (error: unknown) {
+    //   console.log(error, 'errrrr');
+    //   throw error;
+    // }
   }
 
   async login(loginPayload: LoginRequest): Promise<LoginResponse> {

@@ -5,8 +5,6 @@ import {
   Query,
   HttpStatus,
   HttpCode,
-  HttpException,
-  NotFoundException,
 } from '@nestjs/common';
 import { Area, Prisma } from '@prisma/client';
 
@@ -38,8 +36,9 @@ export class AreaController {
       params.take = parseInt(limit);
     }
 
+    // page 1 = first 20
     if (page) {
-      params.skip = (limit ? parseInt(limit) : DEFAULT_LIMIT) * parseInt(page);
+      params.skip = params.take * (parseInt(page) - 1);
     }
 
     if (order in Prisma.SortOrder) {
