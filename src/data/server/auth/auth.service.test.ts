@@ -3,7 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { createMock } from 'ts-auto-mock';
 import { User } from '@prisma/client';
 import { UnauthorizedException } from '@nestjs/common';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import {
+  PrismaClientKnownRequestError,
+  NotFoundError,
+} from '@prisma/client/runtime';
 import * as bcrypt from 'bcrypt';
 
 import { UserService } from '../users/user.service';
@@ -11,7 +14,6 @@ import { AuthService } from './auth.service';
 import { SignUp } from './dto/signup.dto';
 import { LoginRequest } from './dto/loginRequest.dto';
 import { Jwt } from './dto/jwt.dto';
-import { PrismaService } from 'src/data/prisma.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -71,9 +73,11 @@ describe('AuthService', () => {
     const user = await service.register(registerPayload);
 
     expect(spiedBcryptHash).toHaveBeenCalled();
+
     expect(user).toHaveProperty('email', registerPayload.email);
     expect(user).toHaveProperty('firstName', registerPayload.firstName);
     expect(user).toHaveProperty('lastName', registerPayload.lastName);
+
     expect(user).not.toHaveProperty('password');
   });
 
@@ -91,9 +95,9 @@ describe('AuthService', () => {
 
     try {
       await service.register(registerPayload);
-    } catch (error) {
+    } catch (error: unknown) {
       expect(error).toBeInstanceOf(PrismaClientKnownRequestError);
-      expect(error.code).toEqual('P2002');
+      expect((error as PrismaClientKnownRequestError).code).toEqual('P2002');
     }
   });
 
@@ -108,7 +112,9 @@ describe('AuthService', () => {
     const decodedJwt = service.parseJwt(jwtToken.access_token);
 
     expect(mockedJwtService.sign).toHaveBeenCalled();
+
     expect(decodedJwt).not.toHaveProperty('password');
+
     expect(jwtToken).toHaveProperty('access_token', jwtToken.access_token);
     expect(jwtToken.access_token).toEqual(signedString);
   });
@@ -122,9 +128,10 @@ describe('AuthService', () => {
 
     try {
       await service.login(loginPayload);
-    } catch (error) {
-      expect(error).toEqual(
-        new UnauthorizedException(service.loginErrorMessage),
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect((error as UnauthorizedException).message).toEqual(
+        service.loginErrorMessage,
       );
     }
   });
@@ -138,9 +145,11 @@ describe('AuthService', () => {
 
     expect(service.validateUserEmail).toHaveBeenCalled();
     expect(service.validateUserPassword).toHaveBeenCalled();
+
     expect(user).toHaveProperty('email', registerPayload.email);
     expect(user).toHaveProperty('firstName', registerPayload.firstName);
     expect(user).toHaveProperty('lastName', registerPayload.lastName);
+
     expect(user).not.toHaveProperty('password');
   });
 
@@ -155,41 +164,42 @@ describe('AuthService', () => {
   });
 
   it('should throw on validate user email', async () => {
-    mockedUserService.findOneWhere = jest.fn().mockResolvedValueOnce(null);
+    mockedUserService.findOneWhere = jest
+      .fn()
+      .mockRejectedValueOnce(new NotFoundError('No User found'));
     const email = 'incorrect-email@email.com';
 
     try {
       await service.validateUserEmail(email);
-    } catch (error) {
-      expect(error).toEqual(
-        new UnauthorizedException(service.loginErrorMessage),
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect((error as UnauthorizedException).message).toEqual(
+        service.loginErrorMessage,
       );
     }
   });
 
-  it('should validate user password', async () => {
+  it('should validate user password', () => {
     const correctPassword = loginPayload.password;
     const spiedBcryptCompare = jest
       .spyOn(bcrypt, 'compareSync')
       .mockImplementation(() => true);
 
-    await service.validateUserPassword(correctPassword, loginPayload.password);
+    service.validateUserPassword(correctPassword, loginPayload.password);
     expect(spiedBcryptCompare).toHaveBeenCalled();
   });
 
-  it('should throw on validate user password', async () => {
+  it('should throw on validate user password', () => {
     const incorrectPassword = 'incorrect123';
     const spiedBcryptCompare = jest.spyOn(bcrypt, 'compareSync');
 
     try {
-      await service.validateUserPassword(
-        incorrectPassword,
-        loginPayload.password,
-      );
-    } catch (error) {
+      service.validateUserPassword(incorrectPassword, loginPayload.password);
+    } catch (error: unknown) {
       expect(spiedBcryptCompare).toHaveBeenCalled();
-      expect(error).toEqual(
-        new UnauthorizedException(service.loginErrorMessage),
+      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect((error as UnauthorizedException).message).toEqual(
+        service.loginErrorMessage,
       );
     }
   });
@@ -207,9 +217,17 @@ describe('AuthService', () => {
   });
 
   it('should not verify JWT payload', async () => {
-    mockedUserService.findOneWhere = jest.fn().mockResolvedValueOnce(null);
-    const user = await service.verifyPayload(jwtPayload);
+    mockedUserService.findOneWhere = jest
+      .fn()
+      .mockRejectedValueOnce(new NotFoundError('No User found'));
 
-    expect(user).toBe(null);
+    try {
+      await service.verifyPayload(jwtPayload);
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(UnauthorizedException);
+      expect((error as UnauthorizedException).message).toEqual(
+        service.loginErrorMessage,
+      );
+    }
   });
 });
