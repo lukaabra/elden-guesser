@@ -13,10 +13,17 @@ export class UserService {
 
   async findOneWhere(
     userWhereInput: Prisma.UserWhereInput,
-  ): Promise<User | null> {
-    return await this.prisma.user.findFirstOrThrow({
+    fetchPassword = false,
+  ): Promise<User | Omit<User, 'password'>> {
+    const user = await this.prisma.user.findFirstOrThrow({
       where: userWhereInput,
     });
+
+    if (!fetchPassword) {
+      delete user.password;
+    }
+
+    return user;
   }
 
   async findAll(params: {
@@ -25,7 +32,7 @@ export class UserService {
     cursor?: Prisma.UserWhereUniqueInput;
     where?: Prisma.UserWhereInput;
     orderBy?: Prisma.UserOrderByWithRelationInput;
-  }): Promise<User[]> {
+  }): Promise<User[] | Omit<User, 'password'>[]> {
     const { skip, take, cursor, where, orderBy } = params;
     return this.prisma.user.findMany({ skip, take, cursor, where, orderBy });
   }

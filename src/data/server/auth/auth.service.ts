@@ -58,7 +58,7 @@ export class AuthService {
 
   async validateUserEmail(email: string): Promise<User> {
     try {
-      return await this.userService.findOneWhere({ email });
+      return (await this.userService.findOneWhere({ email }, true)) as User;
     } catch (error: unknown) {
       if (error instanceof NotFoundError) {
         // We don't want to let the client know that the user does not exist
@@ -81,9 +81,12 @@ export class AuthService {
     // TODO: Lookup user ID in revoked user ID list
     let user: User;
     try {
-      user = await this.userService.findOneWhere({
-        email: payload.email,
-      });
+      user = (await this.userService.findOneWhere(
+        {
+          email: payload.email,
+        },
+        true,
+      )) as User;
     } catch (error: unknown) {
       if (error instanceof NotFoundError) {
         throw new UnauthorizedException();

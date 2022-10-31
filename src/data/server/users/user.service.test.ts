@@ -76,16 +76,18 @@ describe('UserService', () => {
         email: user.email,
         password: user.password,
       } as Prisma.UserCreateInput);
-    } catch (error) {
+    } catch (error: unknown) {
       expect(error).toBeInstanceOf(Prisma.PrismaClientKnownRequestError);
-      expect(error.message).toEqual(
+      expect((error as Prisma.PrismaClientKnownRequestError).message).toEqual(
         'Unique constraint failed on the fields: (`email`)',
       );
-      expect(error.code).toEqual('P2002');
+      expect((error as Prisma.PrismaClientKnownRequestError).code).toEqual(
+        'P2002',
+      );
     }
   });
 
-  it('should find one user', async () => {
+  it('should find one user and return without password', async () => {
     const email = 'test@email.com';
 
     mockedPrismaService.user.findFirstOrThrow = jest
@@ -97,6 +99,25 @@ describe('UserService', () => {
 
     expect(foundUser).toBeDefined();
     expect(foundUser).toHaveProperty('email', user.email);
+    expect(foundUser).not.toHaveProperty('password');
+  });
+
+  it('should find one user and return with password', async () => {
+    const email = 'test@email.com';
+
+    mockedPrismaService.user.findFirstOrThrow = jest
+      .fn()
+      .mockResolvedValueOnce(createMock<User>(user));
+    const foundUser = await service.findOneWhere(
+      {
+        where: { email },
+      } as Prisma.UserWhereInput,
+      true,
+    );
+
+    expect(foundUser).toBeDefined();
+    expect(foundUser).toHaveProperty('email', user.email);
+    expect(foundUser).toHaveProperty('password', user.password);
   });
 
   it('should throw on find one when user does not exist', async () => {
