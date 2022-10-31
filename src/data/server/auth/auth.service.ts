@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { NotFoundError } from '@prisma/client/runtime';
 
 import { UserService } from '../users/user.service';
 import { LoginRequest } from './dto/loginRequest.dto';
@@ -48,6 +49,7 @@ export class AuthService {
     const { email, password } = loginPayload;
 
     const user = await this.validateUserEmail(email);
+
     this.validateUserPassword(password, user?.password);
 
     delete user.password;
@@ -55,11 +57,21 @@ export class AuthService {
   }
 
   async validateUserEmail(email: string): Promise<User> {
-    return await this.userService.findOneWhere({ email });
+    try {
+      return await this.userService.findOneWhere({ email });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        // We don't want to let the client know that the user does not exist
+        throw new UnauthorizedException(this.loginErrorMessage);
+      }
+
+      throw error;
+    }
   }
 
   validateUserPassword(password: string, userPassword: string): void {
     const passwordHashIsSame = bcrypt.compareSync(password, userPassword);
+
     if (!passwordHashIsSame) {
       throw new UnauthorizedException(this.loginErrorMessage);
     }
