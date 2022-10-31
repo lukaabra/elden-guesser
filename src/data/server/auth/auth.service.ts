@@ -79,13 +79,20 @@ export class AuthService {
 
   async verifyPayload(payload: Jwt): Promise<Omit<User, 'password'>> {
     // TODO: Lookup user ID in revoked user ID list
-    const user = await this.userService.findOneWhere({
-      email: payload.email,
-    });
+    let user: User;
+    try {
+      user = await this.userService.findOneWhere({
+        email: payload.email,
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        throw new UnauthorizedException();
+      }
 
-    if (user) {
-      delete user.password;
+      throw error;
     }
+
+    delete user.password;
 
     return user;
   }
