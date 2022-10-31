@@ -225,9 +225,7 @@ describe('AuthService', () => {
       await service.verifyPayload(jwtPayload);
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(UnauthorizedException);
-      expect((error as UnauthorizedException).message).toEqual(
-        service.loginErrorMessage,
-      );
+      expect((error as UnauthorizedException).message).toEqual('Unauthorized');
     }
   });
 });
