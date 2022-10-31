@@ -3,6 +3,8 @@ import { User, Prisma } from '@prisma/client';
 
 import { PrismaService } from '../../prisma.service';
 
+import type { UserNoPassword } from '../../types/UserNoPassword';
+
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
@@ -14,7 +16,7 @@ export class UserService {
   async findOneWhere(
     userWhereInput: Prisma.UserWhereInput,
     fetchPassword = false,
-  ): Promise<User | Omit<User, 'password'>> {
+  ): Promise<User | UserNoPassword> {
     const user = await this.prisma.user.findFirstOrThrow({
       where: userWhereInput,
     });
@@ -32,9 +34,19 @@ export class UserService {
     cursor?: Prisma.UserWhereUniqueInput;
     where?: Prisma.UserWhereInput;
     orderBy?: Prisma.UserOrderByWithRelationInput;
-  }): Promise<User[] | Omit<User, 'password'>[]> {
+  }): Promise<UserNoPassword[]> {
     const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.user.findMany({ skip, take, cursor, where, orderBy });
+    const users = await this.prisma.user.findMany({
+      skip,
+      take,
+      cursor,
+      where,
+      orderBy,
+    });
+    return users.map((user) => {
+      delete user.password;
+      return user;
+    });
   }
 
   async exists(userWhereInput: Prisma.UserWhereInput): Promise<boolean> {
