@@ -28,17 +28,16 @@ describe('AreaController', () => {
 
   beforeAll(async () => {
     await prisma.cleanDatabase();
-    // await prisma.$connect();
 
     await prisma.area.createMany({ data: areaTestData });
   });
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    const module: TestingModule = await Test.createTestingModule({
       imports: [AreaModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = module.createNestApplication();
     await app.init();
   });
 
