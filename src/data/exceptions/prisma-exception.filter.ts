@@ -26,12 +26,21 @@ export class PrismaClientKnownRequestExceptionFilter
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     let message = '';
+    let code = HttpStatusCode.INTERNAL_SERVER_ERROR;
 
+    // Unique constraint
     if (exception.code === 'P2002') {
       const target = (exception.meta as { target: string[] }).target[0];
+
       message = `${titleCaseWord(target)} already exists`;
+      code = HttpStatusCode.CONFLICT;
     }
 
-    response.status(HttpStatusCode.CONFLICT).send(message);
+    // Table does not exist
+    if (exception.code === 'P2021') {
+      message = `Internal server error`;
+    }
+
+    response.status(code).send(message);
   }
 }
