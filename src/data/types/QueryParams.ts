@@ -4,5 +4,5 @@ export type QueryParams = {
   skip?: number;
   take?: number;
   orderBy?: { [key: string]: Prisma.SortOrder }[];
-  where?: { [key: string]: { contains: string } };
+  where?: { [key: string]: { [key: string]: string | number | Date } };
 };

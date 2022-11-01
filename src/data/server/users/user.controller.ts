@@ -7,7 +7,6 @@ import {
   HttpCode,
   UseGuards,
 } from '@nestjs/common';
-import { User, Prisma } from '@prisma/client';
 
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -15,6 +14,7 @@ import { DEFAULT_LIMIT } from '../../constants';
 import {
   sortParamSatisfiesFormat,
   parseSortParam,
+  parseFilterParam,
 } from '../../utils/queryParamUtils';
 
 import type { UserNoPassword } from '../../types/UserNoPassword';
@@ -31,7 +31,7 @@ export class UserController {
     @Query('limit') limit?,
     @Query('page') page?,
     @Query('sort') sort?,
-    @Query('like') like?,
+    @Query('filter') filter?,
   ): Promise<UserNoPassword[]> {
     const params: QueryParams = { take: DEFAULT_LIMIT };
 
@@ -48,9 +48,9 @@ export class UserController {
       params.orderBy = parseSortParam(sort);
     }
 
-    // if (like) {
-    //   params.where = { label: { contains: like } };
-    // }
+    if (filter) {
+      params.where = parseFilterParam(filter);
+    }
 
     return this.userService.findAll({ ...params });
   }
