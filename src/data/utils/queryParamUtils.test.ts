@@ -1,4 +1,8 @@
-import { sortParamSatisfiesFormat, parseSortParam } from './queryParamUtils';
+import {
+  sortParamSatisfiesFormat,
+  parseSortParam,
+  parseFilterParam,
+} from './queryParamUtils';
 
 describe('queryParamUtils', () => {
   it('sort query string should satisfy sort format', async () => {
@@ -38,5 +42,45 @@ describe('queryParamUtils', () => {
 
     expect(parsedQueryString).toBeInstanceOf(Array);
     expect(parsedQueryString.length).toEqual(0);
+  });
+
+  it('filter query string with 1 filter parsed successfully', async () => {
+    const queryString = 'id[equals]"1"';
+    const parsedQueryString = parseFilterParam(queryString);
+
+    expect(parsedQueryString).toHaveProperty('id', { equals: 1 });
+  });
+
+  it('filter query string with 2 filters parsed successfully', async () => {
+    const queryString = 'id[equals]"1"&lastName[contains]"test"';
+    const parsedQueryString = parseFilterParam(queryString);
+
+    expect(parsedQueryString).toHaveProperty('id', { equals: 1 });
+    expect(parsedQueryString).toHaveProperty('lastName', {
+      contains: 'test',
+      mode: 'insensitive',
+    });
+  });
+
+  it('filter query string with 1 correct filter parsed successfully and 1 incorrect param ignored', async () => {
+    const queryString = 'id[equals]"1"&blabla[blalba]<fdsa>';
+    const parsedQueryString = parseFilterParam(queryString);
+
+    expect(parsedQueryString).toHaveProperty('id', { equals: 1 });
+    expect(parsedQueryString).not.toHaveProperty('blabla');
+  });
+
+  it('filter query containing double quotes in value ignored', async () => {
+    const queryString = 'id[equals]"some"value"with"quotes"';
+    const parsedQueryString = parseSortParam(queryString);
+
+    expect(parsedQueryString).not.toHaveProperty('id');
+  });
+
+  it('incorrect filter query string returns empty object', async () => {
+    const queryString = 'fjdksla;djksla;gjsdi;i4jg439';
+    const parsedQueryString = parseFilterParam(queryString);
+
+    expect(Object.keys(parsedQueryString).length).toEqual(0);
   });
 });
