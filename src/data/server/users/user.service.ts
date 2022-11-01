@@ -33,7 +33,7 @@ export class UserService {
     take?: number;
     cursor?: Prisma.UserWhereUniqueInput;
     where?: Prisma.UserWhereInput;
-    orderBy?: Prisma.UserOrderByWithRelationInput;
+    orderBy?: Prisma.UserOrderByWithRelationInput[];
   }): Promise<UserNoPassword[]> {
     const { skip, take, cursor, where, orderBy } = params;
     const users = await this.prisma.user.findMany({
