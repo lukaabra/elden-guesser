@@ -1,5 +1,7 @@
 import { Prisma } from '@prisma/client';
 
+export type SortObject = { [key: string]: Prisma.SortOrder }[];
+
 export type FilterObject = {
   [key: string]: { [key: string]: string | number | Date };
 };
@@ -16,11 +18,9 @@ export const sortParamSatisfiesFormat = (
   return sortQueryStringRegex.test(sortString);
 };
 
-export const parseSortParam = (
-  sortString: string,
-): { [key: string]: Prisma.SortOrder }[] => {
+export const parseSortParam = (sortString: string): SortObject => {
   const sortQueryStringRegex = /(\w+)\((asc|desc)\)/gu;
-  const sortObject: { [key: string]: Prisma.SortOrder }[] = [];
+  const sortObject: SortObject = [];
 
   let match: RegExpExecArray;
   do {
