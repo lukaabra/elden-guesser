@@ -1,5 +1,8 @@
 import { Prisma } from '@prisma/client';
 
+import { DEFAULT_LIMIT } from '../constants';
+import { QueryParams } from '../types/QueryParams';
+
 export type SortObject = { [key: string]: Prisma.SortOrder }[];
 
 export type FilterObject = {
@@ -67,4 +70,32 @@ export const parseFilterParam = (filterString: string): FilterObject => {
   } while (match);
 
   return filterObject;
+};
+
+export const parseQueryParams = (
+  limit?: string,
+  page?: string,
+  sort?: string,
+  filter?: string,
+): QueryParams => {
+  const params: QueryParams = { take: DEFAULT_LIMIT };
+
+  if (limit && !isNaN(parseInt(limit))) {
+    params.take = parseInt(limit);
+  }
+
+  // page 1 = first 20 if limit is default
+  if (page && !isNaN(parseInt(page))) {
+    params.skip = params.take * (parseInt(page) - 1);
+  }
+
+  if (sortParamSatisfiesFormat(sort)) {
+    params.orderBy = parseSortParam(sort);
+  }
+
+  if (filter) {
+    params.where = parseFilterParam(filter);
+  }
+
+  return params;
 };

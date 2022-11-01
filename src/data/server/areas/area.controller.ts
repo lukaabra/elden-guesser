@@ -6,15 +6,10 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import { Area, Prisma } from '@prisma/client';
+import { Area } from '@prisma/client';
 
 import { AreaService } from './area.service';
-import { DEFAULT_LIMIT } from '../../constants';
-import {
-  sortParamSatisfiesFormat,
-  parseSortParam,
-  parseFilterParam,
-} from '../../utils/queryParamUtils';
+import { parseQueryParams } from '../../utils/queryParamUtils';
 
 import type { QueryParams } from '../../types/QueryParams';
 
@@ -30,24 +25,7 @@ export class AreaController {
     @Query('sort') sort?,
     @Query('filter') filter?,
   ): Promise<Area[]> {
-    const params: QueryParams = { take: DEFAULT_LIMIT };
-
-    if (limit) {
-      params.take = parseInt(limit);
-    }
-
-    // page 1 = first 20
-    if (page) {
-      params.skip = params.take * (parseInt(page) - 1);
-    }
-
-    if (sortParamSatisfiesFormat(sort)) {
-      params.orderBy = parseSortParam(sort);
-    }
-
-    if (filter) {
-      params.where = parseFilterParam(filter);
-    }
+    const params: QueryParams = parseQueryParams(limit, page, sort, filter);
 
     return this.areaService.findAll({ ...params });
   }
