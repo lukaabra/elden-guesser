@@ -10,13 +10,13 @@ import { Area, Prisma } from '@prisma/client';
 
 import { AreaService } from './area.service';
 import { DEFAULT_LIMIT } from '../../constants';
+import {
+  sortParamSatisfiesFormat,
+  parseSortParam,
+  parseFilterParam,
+} from '../../utils/queryParamUtils';
 
-type AreasAllParams = {
-  skip?: number;
-  take?: number;
-  orderBy?: { label: Prisma.SortOrder };
-  where?: { label: { contains: string } };
-};
+import type { QueryParams } from '../../types/QueryParams';
 
 @Controller('areas')
 export class AreaController {
@@ -27,10 +27,10 @@ export class AreaController {
   async getAll(
     @Query('limit') limit?,
     @Query('page') page?,
-    @Query('order') order?,
-    @Query('like') like?,
+    @Query('sort') sort?,
+    @Query('filter') filter?,
   ): Promise<Area[]> {
-    const params: AreasAllParams = { take: DEFAULT_LIMIT };
+    const params: QueryParams = { take: DEFAULT_LIMIT };
 
     if (limit) {
       params.take = parseInt(limit);
@@ -41,12 +41,12 @@ export class AreaController {
       params.skip = params.take * (parseInt(page) - 1);
     }
 
-    if (order in Prisma.SortOrder) {
-      params.orderBy = { label: order as Prisma.SortOrder };
+    if (sortParamSatisfiesFormat(sort)) {
+      params.orderBy = parseSortParam(sort);
     }
 
-    if (like) {
-      params.where = { label: { contains: like } };
+    if (filter) {
+      params.where = parseFilterParam(filter);
     }
 
     return this.areaService.findAll({ ...params });

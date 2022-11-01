@@ -20,7 +20,7 @@ export class AreaService {
     take?: number;
     cursor?: Prisma.AreaWhereUniqueInput;
     where?: Prisma.AreaWhereInput;
-    orderBy?: Prisma.AreaOrderByWithRelationInput;
+    orderBy?: Prisma.AreaOrderByWithRelationInput[];
   }): Promise<Area[]> {
     const { skip, take, cursor, where, orderBy } = params;
     return this.prisma.area.findMany({ skip, take, cursor, where, orderBy });
