@@ -44,7 +44,7 @@ export const parseSortParam = (sortString: string): SortObject => {
 export const parseFilterParam = (filterString: string): FilterObject => {
   const stringOnlyOperations = ['contains', 'startsWith', 'endsWith'];
   const filterQueryStringRegex =
-    /(\w+)\[(equals|in|notIn|lt|lte|gt|gte|contains|startsWith|endsWith|not)\]"([\w|\d]+)"/gu;
+    /(\w+)\[(equals|in|notIn|lt|lte|gt|gte|contains|startsWith|endsWith|not)\]"(\w*\d*[,<.>/?;:'\[\{\]\}\\\|=+\-_)(*&^%$#@!`]*)"/gu;
   const filterObject: FilterObject = {};
 
   let match: RegExpExecArray;

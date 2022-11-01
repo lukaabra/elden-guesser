@@ -52,12 +52,12 @@ describe('queryParamUtils', () => {
   });
 
   it('filter query string with 2 filters parsed successfully', async () => {
-    const queryString = 'id[equals]"1"&lastName[contains]"test"';
+    const queryString = 'id[equals]"1"&lastName[contains]"test."';
     const parsedQueryString = parseFilterParam(queryString);
 
     expect(parsedQueryString).toHaveProperty('id', { equals: 1 });
     expect(parsedQueryString).toHaveProperty('lastName', {
-      contains: 'test',
+      contains: 'test.',
       mode: 'insensitive',
     });
   });
@@ -70,11 +70,11 @@ describe('queryParamUtils', () => {
     expect(parsedQueryString).not.toHaveProperty('blabla');
   });
 
-  it('filter query containing double quotes in value ignored', async () => {
+  it('filter query containing double quotes in value ignores rest of query after second quote', async () => {
     const queryString = 'id[equals]"some"value"with"quotes"';
-    const parsedQueryString = parseSortParam(queryString);
+    const parsedQueryString = parseFilterParam(queryString);
 
-    expect(parsedQueryString).not.toHaveProperty('id');
+    expect(parsedQueryString).toHaveProperty('id', { equals: 'some' });
   });
 
   it('incorrect filter query string returns empty object', async () => {
