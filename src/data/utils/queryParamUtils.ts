@@ -21,6 +21,8 @@ export const sortParamSatisfiesFormat = (
   return sortQueryStringRegex.test(sortString);
 };
 
+// Sort query parameter string example:
+// sort=lastName(asc),email(desc)
 export const parseSortParam = (sortString: string): SortObject => {
   const sortQueryStringRegex = /(\w+)\((asc|desc)\)/gu;
   const sortObject: SortObject = [];
@@ -43,7 +45,8 @@ export const parseSortParam = (sortString: string): SortObject => {
   return sortObject;
 };
 
-// Query filter example: id[equals]"1"&lastName[contains]"test"
+// Filter query parameter string example:
+// id[equals]"1"&lastName[contains]"test"
 export const parseFilterParam = (filterString: string): FilterObject => {
   const stringOnlyOperations = ['contains', 'startsWith', 'endsWith'];
   const filterQueryStringRegex =
