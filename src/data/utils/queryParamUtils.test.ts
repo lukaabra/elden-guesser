@@ -2,7 +2,9 @@ import {
   sortParamSatisfiesFormat,
   parseSortParam,
   parseFilterParam,
+  parseQueryParams,
 } from './queryParamUtils';
+import { DEFAULT_LIMIT } from '../constants';
 
 describe('queryParamUtils', () => {
   it('sort query string should satisfy sort format', async () => {
@@ -82,5 +84,51 @@ describe('queryParamUtils', () => {
     const parsedQueryString = parseFilterParam(queryString);
 
     expect(Object.keys(parsedQueryString).length).toEqual(0);
+  });
+
+  it('parses query params correctly', async () => {
+    const limit = '100';
+    const page = '2';
+    const sort = 'sort=lastName(asc),email(desc)';
+    const filter = 'filter=id[equals]"1"&lastName[contains]"test"';
+
+    const parsedQueryParams = parseQueryParams(limit, page, sort, filter);
+
+    expect(parsedQueryParams).toHaveProperty('take', 100);
+    expect(parsedQueryParams).toHaveProperty('skip', 100);
+    expect(parsedQueryParams).toHaveProperty('orderBy', [
+      {
+        lastName: 'asc',
+      },
+      {
+        email: 'desc',
+      },
+    ]);
+    expect(parsedQueryParams).toHaveProperty('where', {
+      id: { equals: 1 },
+      lastName: { contains: 'test', mode: 'insensitive' },
+    });
+  });
+
+  it('returns default query params', async () => {
+    const parsedQueryParams = parseQueryParams();
+
+    expect(parsedQueryParams).toHaveProperty('take', DEFAULT_LIMIT);
+    expect(parsedQueryParams).not.toHaveProperty('skip');
+    expect(parsedQueryParams).not.toHaveProperty('orderBy');
+    expect(parsedQueryParams).not.toHaveProperty('where');
+  });
+
+  it('ignores incorrect limit and page', async () => {
+    const nonNumericString = 'nonNumericString';
+    const parsedQueryParams = parseQueryParams(
+      nonNumericString,
+      nonNumericString,
+    );
+
+    expect(parsedQueryParams).toHaveProperty('take', DEFAULT_LIMIT);
+    expect(parsedQueryParams).not.toHaveProperty('skip');
+    expect(parsedQueryParams).not.toHaveProperty('orderBy');
+    expect(parsedQueryParams).not.toHaveProperty('where');
   });
 });
