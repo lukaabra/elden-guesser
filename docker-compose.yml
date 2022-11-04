@@ -11,6 +11,8 @@ services:
       POSTGRES_USER: ${DATABASE_USER}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - devdata:/var/lib/postgresql/data
   test-db:
     image: postgres:13
     restart: always
@@ -21,3 +23,8 @@ services:
       POSTGRES_USER: prisma
       POSTGRES_PASSWORD: prisma
       POSTGRES_DB: tests
+    volumes:
+      - testdata:/var/lib/postgresql/data
+volumes:
+  devdata:
+  testdata:
