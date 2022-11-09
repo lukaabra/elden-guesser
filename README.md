@@ -1,8 +1,7 @@
 # NestJS API
 
 ## Features
-- REST Express API
-- JWT auth with blacklist
+- REST Express API with JWT Auth
 - Prisma ORM and PostgreSQL database
 - Testing pipeline with Jest and Docker
 
