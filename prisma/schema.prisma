@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Area {
+model Product {
   id      Int      @id @default(autoincrement())
   label   String
   created DateTime @default(now())

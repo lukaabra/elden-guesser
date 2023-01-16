@@ -6,16 +6,16 @@ import {
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
-import { Area } from '@prisma/client';
+import { Product } from '@prisma/client';
 
-import { AreaService } from './area.service';
+import { ProductService } from './product.service';
 import { parseQueryParams } from '../../utils/queryParamUtils';
 
 import type { QueryParams } from '../../types/QueryParams';
 
-@Controller('areas')
-export class AreaController {
-  constructor(private areaService: AreaService) {}
+@Controller('products')
+export class ProductController {
+  constructor(private productService: ProductService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
@@ -24,15 +24,15 @@ export class AreaController {
     @Query('page') page?,
     @Query('sort') sort?,
     @Query('filter') filter?,
-  ): Promise<Area[]> {
+  ): Promise<Product[]> {
     const params: QueryParams = parseQueryParams(limit, page, sort, filter);
 
-    return this.areaService.findAll({ ...params });
+    return this.productService.findAll({ ...params });
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  async getOne(@Param('id') id: string): Promise<Area> {
-    return this.areaService.findOneWhere({ id: Number(id) });
+  async getOne(@Param('id') id: string): Promise<Product> {
+    return this.productService.findOneWhere({ id: Number(id) });
   }
 }
