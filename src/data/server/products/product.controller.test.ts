@@ -86,8 +86,6 @@ describe('ProductController', () => {
       .get('/products?sort=label(asc)')
       .expect(200);
 
-    console.log(res.body);
-
     expect(res.body.length).toEqual(5);
     expect(res.body[0].label <= res.body[1].label).toEqual(true);
   });
@@ -105,8 +103,6 @@ describe('ProductController', () => {
     const res = await request(app.getHttpServer())
       .get('/products?filter=label[contains]"Four."]')
       .expect(200);
-
-    console.log(res.body);
 
     expect(res.body.length).toEqual(1);
     expect(res.body[0].label).toContain('Four.');

@@ -2,5 +2,11 @@ import { IsDefined } from 'class-validator';
 
 export class LoginResponse {
   @IsDefined()
-  readonly access_token: string;
+  readonly accessToken: string;
+
+  readonly email: string;
+
+  readonly id: number;
+
+  readonly name: string;
 }

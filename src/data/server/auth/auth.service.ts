@@ -42,7 +42,12 @@ export class AuthService {
       userId: user.id,
     });
 
-    return { access_token: jwtToken };
+    return {
+      accessToken: jwtToken,
+      email: user.email,
+      id: user.id,
+      name: `${user.firstName} ${user.lastName}`,
+    };
   }
 
   async validateUser(loginPayload: LoginRequest): Promise<User> {

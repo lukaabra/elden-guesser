@@ -26,10 +26,12 @@ describe('AuthService', () => {
     firstName: 'John',
     lastName: 'Doe',
   };
+
   const loginPayload: LoginRequest = {
     email: 'test@email.com',
     password: 'password123',
   };
+
   const jwtPayload: Jwt = {
     email: 'test@email.com',
     userId: 1,
@@ -53,9 +55,11 @@ describe('AuthService', () => {
       .compile();
 
     service = module.get<AuthService>(AuthService);
+
     mockedUserService = module.get<UserService, jest.Mocked<UserService>>(
       UserService,
     );
+
     mockedJwtService = module.get<JwtService, jest.Mocked<JwtService>>(
       JwtService,
     );
@@ -67,9 +71,11 @@ describe('AuthService', () => {
 
   it('should register user', async () => {
     const spiedBcryptHash = jest.spyOn(bcrypt, 'hash');
+
     mockedUserService.create = jest
       .fn()
       .mockResolvedValueOnce(createMock<User>(registerPayload));
+
     const user = await service.register(registerPayload);
 
     expect(spiedBcryptHash).toHaveBeenCalled();
@@ -104,19 +110,27 @@ describe('AuthService', () => {
   it('should login user', async () => {
     const signedString =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAZW1haWwuY29tIiwiYWNjb3VudElkIjoxLCJpYXQiOjE2NjIwMDkxMzMsImV4cCI6MTY2MjA0NTEzM30.9HOgZLKX3RT5hqqXS5YU8NWZjH17CkBTuGpUOHF2h_s';
+
     mockedJwtService.sign = jest.fn().mockReturnValueOnce(signedString);
+
     service.validateUser = jest
       .fn()
       .mockResolvedValueOnce(createMock<User>(registerPayload));
+
     const jwtToken = await service.login(loginPayload);
-    const decodedJwt = service.parseJwt(jwtToken.access_token);
+    const decodedJwt = service.parseJwt(jwtToken.accessToken);
 
     expect(mockedJwtService.sign).toHaveBeenCalled();
 
     expect(decodedJwt).not.toHaveProperty('password');
 
-    expect(jwtToken).toHaveProperty('access_token', jwtToken.access_token);
-    expect(jwtToken.access_token).toEqual(signedString);
+    expect(jwtToken).toHaveProperty('accessToken', jwtToken.accessToken);
+
+    expect(jwtToken).toHaveProperty('id', jwtToken.id);
+    expect(jwtToken).toHaveProperty('name', jwtToken.name);
+    expect(jwtToken).toHaveProperty('email', jwtToken.email);
+
+    expect(jwtToken.accessToken).toEqual(signedString);
   });
 
   it('should throw on failed login', async () => {
