@@ -18,6 +18,7 @@ describe('UserService', () => {
     lastName: 'Doe',
     email: 'test@email.com',
     password: 'randomHash',
+    stripeAccountId: null,
     created: new Date('2022-08-28 09:44:42.147'),
     updated: new Date('2022-08-28 09:44:42.147'),
   };

@@ -11,18 +11,23 @@ describe('ProductController', () => {
   const productTestData = [
     {
       label: 'Product 3',
+      price: 100,
     },
     {
       label: 'Product 5',
+      price: 100,
     },
     {
       label: 'Product 1',
+      price: 100,
     },
     {
       label: 'Product Four.',
+      price: 100,
     },
     {
       label: 'Product 2',
+      price: 100,
     },
   ];
 

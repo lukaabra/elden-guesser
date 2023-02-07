@@ -13,6 +13,16 @@ export class UserService {
     return this.prisma.user.create({ data });
   }
 
+  async update(
+    userWhereInput: Prisma.UserWhereUniqueInput,
+    data: Prisma.UserUpdateInput,
+  ): Promise<User> {
+    return this.prisma.user.update({
+      where: userWhereInput,
+      data,
+    });
+  }
+
   async findOneWhere(
     userWhereInput: Prisma.UserWhereInput,
     fetchPassword = false,
